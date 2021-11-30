@@ -35,7 +35,6 @@ router.get('/:id', (req, res) => {
     });
 })
 
-// | 3   | POST   | /api/posts              | Creates a post using the information sent inside the request body and returns **the newly created post object**  
 
 router.post('/', (req, res) => {
   const {title, contents} = req.body
@@ -60,12 +59,42 @@ router.post('/', (req, res) => {
   
   
 
-// | 4   | PUT    | /api/posts/:id          | Updates the post with the specified id using data from the request body and **returns the modified document**, not the original |
-
-router.put('/', (req, res) => {
-  console.log('get is up')
-  res.json('endpoint working')
-})
+router.put('/:id', (req, res) => {
+  const {title, contents} = req.body
+  if (!title || !contents) {
+    res.status(400).json({ 
+          message: 'Please provide title and contents for the post', 
+        })
+  } else {
+    Post.findById(req.params.id)
+      .then( possiblePost => {
+        if(!possiblePost) {
+          res.status(404).json({ 
+          message: "The post with the specified ID does not exist",
+      })
+        } else {
+          return Post.update(req.params.id, req.body)
+          } 
+      })
+        .then(data => {
+          if (data) {
+            return Post.findById(req.params.id)
+          }
+        })
+        .then(post => {
+          if (post) {
+            res.json(post)
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          res.status(500).json({
+            message: 'The post information could not be modified',
+          });
+        });
+  }
+});
+      
 
 // | 5   | DELETE | /api/posts/:id          | Removes the post with the specified id and returns the **deleted post object**             
 
