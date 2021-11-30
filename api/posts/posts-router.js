@@ -16,8 +16,7 @@ router.get('/', (req, res) => {
       });
     });
 })
-
-// | 2   | GET    | /api/posts/:id          | Returns **the post object with the specified id**    
+  
 
 router.get('/:id', (req, res) => {
   Post.findById(req.params.id)
@@ -39,9 +38,27 @@ router.get('/:id', (req, res) => {
 // | 3   | POST   | /api/posts              | Creates a post using the information sent inside the request body and returns **the newly created post object**  
 
 router.post('/', (req, res) => {
-  console.log('get is up')
-  res.json('endpoint working')
+  const {title, contents} = req.body
+  if (!title || !contents) {
+    res.status(400).json({ message: 'Please provide title and contents for the post'})
+  } else {
+    Post.insert(req.body)
+    .then(({ id }) => {
+      return Post.findById(id)
+    })
+    .then(post => {
+      res.status(201).json(post);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        message: 'The posts information could not be retrieved',
+      });
+    });
+  }
 })
+  
+  
 
 // | 4   | PUT    | /api/posts/:id          | Updates the post with the specified id using data from the request body and **returns the modified document**, not the original |
 
